@@ -3,3 +3,5 @@
 
 # Ignorar configuración de Visual Studio Code
 .vscode/
+go.mod
+go.sum

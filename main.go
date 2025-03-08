@@ -1,37 +1,42 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    "demo/src/core"
-    "demo/src/core/routes"
-    "github.com/joho/godotenv"
-    "os"
+	"demo/src/core/routes"
+	"demo/src/procesamiento/application"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/streadway/amqp"
 )
 
 func main() {
-    err := godotenv.Load()
-    if err != nil { 
-        log.Fatal("Error al cargar el archivo .env")
-    }
 
-    db, err := core.ConnectDB()
-    if err != nil {
-        log.Fatal("Error al conectar la base de datos:", err)
-    }
-    defer db.Close()
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("⚠️ No se pudo cargar el archivo .env, verificando variables del sistema")
+	}
 
-    router := routes.NewRouter(db)
+	
+	rabbitMQURL := "amqp://admin:admin@34.229.163.67:5672/"
+	conn, err := amqp.Dial(rabbitMQURL)
+	if err != nil {
+		log.Fatalf("❌ Error al conectar con RabbitMQ: %s", err)
+	}
+	defer conn.Close()
 
-    port := os.Getenv("APP_PORT")
-    if port == "" {
-        port = "8080"
-    }
+	// Crear instancia del caso  con conexión a RabbitMQ
+	useCase := application.NewProcesadorPedidoUseCase(conn)
 
-    log.Println("Servidor corriendo en el puerto", port)
-    log.Fatal(http.ListenAndServe(":"+port, router))
+	
+	router := routes.SetupRouter(useCase)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+	log.Println("🚀 Servidor corriendo en http://localhost:" + port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
-
-
-
-// En la carpeta repositories, solo debe un archivo para todos los metodos, para hacer la injeccion de dependencias, y entidades, se necesita hacer la interface para el ropositorio y hacer bien la json api, osea las urls de los endpoints, y estudiar mas los event drive b
