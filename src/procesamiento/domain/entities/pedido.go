@@ -1,3 +1,4 @@
+//api-notification//src/procesamiento/domain/entities/pedido.go
 package entities
 
 type Pedido struct {

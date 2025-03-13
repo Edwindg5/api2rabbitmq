@@ -2,7 +2,7 @@
 package routes
 
 import (
-	"demo/src/core"
+
 	"demo/src/procesamiento/application"
 	"demo/src/procesamiento/infraestructure/routes"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 
 func SetupRouter(useCase *application.ProcesadorPedidoUseCase) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(core.LoggingMiddleware)
+	
 
 	routes.RegisterProcesamientoRoutes(router, useCase)
 
