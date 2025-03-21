@@ -34,14 +34,7 @@ func NotificacionesHandler(useCase *application.ProcesadorPedidoUseCase) http.Ha
     return func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodGet {
             w.Header().Set("Content-Type", "application/json")
-            // Filtra solo notificaciones válidas y en estado "pendiente"
-            var pedidosPendientes []entities.Pedido
-            for _, noti := range notificaciones {
-                if noti.ID > 0 && noti.Cliente != "" && noti.Producto != "" && noti.Cantidad > 0 && noti.Estado == "pendiente" {
-                    pedidosPendientes = append(pedidosPendientes, noti)
-                }
-            }
-            json.NewEncoder(w).Encode(pedidosPendientes)
+            json.NewEncoder(w).Encode(notificaciones) // Devuelve todos los pendientes
             return
         }
 
@@ -51,34 +44,25 @@ func NotificacionesHandler(useCase *application.ProcesadorPedidoUseCase) http.Ha
             return
         }
 
-        // Asignar un ID correcto si es `0`
-        if notificacion.ID == 0 {
-            notificacion.ID = len(notificaciones) + 1
-        }
-
-        // Filtrar solo los pedidos con estado "pendiente"
         if notificacion.Estado != "pendiente" {
-            log.Println("❌ Pedido rechazado: No está en estado 'pendiente'")
+            log.Println("❌ Pedido rechazado: Solo se aceptan pedidos 'pendiente'")
             http.Error(w, "Solo se aceptan pedidos pendientes", http.StatusBadRequest)
             return
         }
 
-        log.Println("🔔 Nueva notificación recibida:", notificacion)
+        log.Println("🔔 Notificación recibida y enviada a la cola pedido_enviado:", notificacion)
 
-        // Almacenar en memoria
-        notificaciones = append(notificaciones, notificacion)
-
-        // Enviar a la cola 'pedido_enviado'
+        // Enviar solo los pedidos "pendiente" a la cola 'pedido_enviado'
         err := useCase.EnviarPedidoEnviado(notificacion)
         if err != nil {
-            log.Println("❌ Error enviando el mensaje a la cola 'pedido_enviado':", err)
+            log.Println("❌ Error enviando el mensaje a la cola:", err)
             http.Error(w, "Error enviando el mensaje", http.StatusInternalServerError)
             return
         }
 
-        log.Println("✅ Notificación almacenada y enviada correctamente")
+        notificaciones = append(notificaciones, notificacion) // Guardar en memoria
 
         w.WriteHeader(http.StatusCreated)
-        json.NewEncoder(w).Encode(map[string]string{"message": "Notificación enviada correctamente"})
+        json.NewEncoder(w).Encode(map[string]string{"message": "Pedido enviado correctamente a la cola."})
     }
 }
