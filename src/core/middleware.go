@@ -9,9 +9,9 @@ import (
 
 func SetupCORS(handler http.Handler) http.Handler {
 	return cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"}, // Permite cualquier origen
+		AllowedOrigins:   []string{"*"}, 
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"}, // Permite todos los encabezados
+		AllowedHeaders:   []string{"*"}, 
 		AllowCredentials: true,
 	}).Handler(handler)
 }

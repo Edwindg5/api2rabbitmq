@@ -48,7 +48,7 @@ func main() {
 	routes.RegisterProcesamientoRoutes(router, useCase)
 	router.HandleFunc("/ws", controllers.WebSocketHandler)
 
-	// Aplicar middleware de CORS
+
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: middleware.SetupCORS(router),
