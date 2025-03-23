@@ -2,19 +2,18 @@
 package middleware
 
 import (
-	"github.com/rs/cors"
 	"net/http"
+
+	"github.com/rs/cors"
 )
 
 func SetupCORS(handler http.Handler) http.Handler {
 	return cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:5173", "ws://localhost:8081"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedOrigins:   []string{"*"}, // Permite cualquier origen
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"}, // Permite todos los encabezados
 		AllowCredentials: true,
 	}).Handler(handler)
-	
-
-
 }
+
 
